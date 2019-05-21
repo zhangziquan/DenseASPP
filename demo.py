@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='DenseASPP inference code.')
     parser.add_argument('--model_name', default='DenseASPP161', help='segmentation model.')
     parser.add_argument('--model_path', default='./weights/denseASPP161.pkl', help='weight path.')
-    parser.add_argument('--img_dir', default='./Cityscapes/leftImg8bit/val', help='image dir.')
+    parser.add_argument('--img_dir', default='./data', help='image dir.')
     args = parser.parse_args()
 
     infer = Inference(args.model_name, args.model_path)

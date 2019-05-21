@@ -9,6 +9,8 @@ from torchvision import transforms
 from torch.autograd import Variable
 from collections import OrderedDict
 
+SAVE_PATH = "./results/"
+
 
 IS_MULTISCALE = True
 N_CLASS = 19
@@ -25,6 +27,8 @@ data_transforms = transforms.Compose([transforms.ToTensor(),
 class Inference(object):
 
     def __init__(self, model_name, model_path):
+        print(model_name,model_path)
+
         self.seg_model = self.__init_model(model_name, model_path, is_local=False)
 
     def __init_model(self, model_name, model_path, is_local=False):
@@ -57,10 +61,11 @@ class Inference(object):
     def folder_inference(self, img_dir, is_multiscale=True):
         folders = sorted(os.listdir(img_dir))
         for f in folders:
+            save_path = SAVE_PATH + f + "/"
             read_path = os.path.join(img_dir, f)
             names = sorted(os.listdir(read_path))
             for n in names:
-                if not n.endswith(".png"):
+                if not n.endswith(".jpg"):
                     continue
                 print(n)
                 read_name = os.path.join(read_path, n)
@@ -70,8 +75,10 @@ class Inference(object):
                 else:
                     pre = self.single_inference(img)
                 mask = self.__pre_to_img(pre)
-                cv2.imshow('DenseASPP', mask)
-                cv2.waitKey(0)
+                cv2.imwrite(save_path + n, mask)
+                print(save_path + n)
+                #cv2.imshow('DenseASPP', mask)
+                #cv2.waitKey(0)
 
     def multiscale_inference(self, test_img):
         h, w = test_img.size
@@ -129,6 +136,7 @@ class Inference(object):
                 name = k[7:]  # remove `module.`
                 new_state_dict[name] = v
             seg_model.load_state_dict(new_state_dict)
+        print("loading complete")
 
     @staticmethod
     def __pre_to_img(pre):

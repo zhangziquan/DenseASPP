@@ -35,45 +35,45 @@ class DenseASPP(nn.Module):
 
         # Each denseblock
         num_features = num_init_features
-        # block1*****************************************************************************************************
-        block = _DenseBlock(num_layers=block_config[0], num_input_features=num_features,
-                            bn_size=bn_size, growth_rate=growth_rate, drop_rate=drop_rate)
-        self.features.add_module('denseblock%d' % 1, block)
-        num_features = num_features + block_config[0] * growth_rate
+#         # block1*****************************************************************************************************
+#         block = _DenseBlock(num_layers=block_config[0], num_input_features=num_features,
+#                             bn_size=bn_size, growth_rate=growth_rate, drop_rate=drop_rate)
+#         self.features.add_module('denseblock%d' % 1, block)
+#         num_features = num_features + block_config[0] * growth_rate
 
-        trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2)
-        self.features.add_module('transition%d' % 1, trans)
-        num_features = num_features // 2
+#         trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2)
+#         self.features.add_module('transition%d' % 1, trans)
+#         num_features = num_features // 2
 
-        # block2*****************************************************************************************************
-        block = _DenseBlock(num_layers=block_config[1], num_input_features=num_features,
-                            bn_size=bn_size, growth_rate=growth_rate, drop_rate=drop_rate)
-        self.features.add_module('denseblock%d' % 2, block)
-        num_features = num_features + block_config[1] * growth_rate
+#         # block2*****************************************************************************************************
+#         block = _DenseBlock(num_layers=block_config[1], num_input_features=num_features,
+#                             bn_size=bn_size, growth_rate=growth_rate, drop_rate=drop_rate)
+#         self.features.add_module('denseblock%d' % 2, block)
+#         num_features = num_features + block_config[1] * growth_rate
 
-        trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=feature_size)
-        self.features.add_module('transition%d' % 2, trans)
-        num_features = num_features // 2
+#         trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=feature_size)
+#         self.features.add_module('transition%d' % 2, trans)
+#         num_features = num_features // 2
 
-        # block3*****************************************************************************************************
-        block = _DenseBlock(num_layers=block_config[2], num_input_features=num_features, bn_size=bn_size,
-                            growth_rate=growth_rate, drop_rate=drop_rate, dilation_rate=int(2 / feature_size))
-        self.features.add_module('denseblock%d' % 3, block)
-        num_features = num_features + block_config[2] * growth_rate
+#         # block3*****************************************************************************************************
+#         block = _DenseBlock(num_layers=block_config[2], num_input_features=num_features, bn_size=bn_size,
+#                             growth_rate=growth_rate, drop_rate=drop_rate, dilation_rate=int(2 / feature_size))
+#         self.features.add_module('denseblock%d' % 3, block)
+#         num_features = num_features + block_config[2] * growth_rate
 
-        trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=1)
-        self.features.add_module('transition%d' % 3, trans)
-        num_features = num_features // 2
+#         trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=1)
+#         self.features.add_module('transition%d' % 3, trans)
+#         num_features = num_features // 2
 
-        # block4*****************************************************************************************************
-        block = _DenseBlock(num_layers=block_config[3], num_input_features=num_features, bn_size=bn_size,
-                            growth_rate=growth_rate, drop_rate=drop_rate, dilation_rate=int(4 / feature_size))
-        self.features.add_module('denseblock%d' % 4, block)
-        num_features = num_features + block_config[3] * growth_rate
+#         # block4*****************************************************************************************************
+#         block = _DenseBlock(num_layers=block_config[3], num_input_features=num_features, bn_size=bn_size,
+#                             growth_rate=growth_rate, drop_rate=drop_rate, dilation_rate=int(4 / feature_size))
+#         self.features.add_module('denseblock%d' % 4, block)
+#         num_features = num_features + block_config[3] * growth_rate
 
-        trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=1)
-        self.features.add_module('transition%d' % 4, trans)
-        num_features = num_features // 2
+#         trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2, stride=1)
+#         self.features.add_module('transition%d' % 4, trans)
+#         num_features = num_features // 2
 
         # Final batch norm
         self.features.add_module('norm5', bn(num_features))
@@ -94,7 +94,7 @@ class DenseASPP(nn.Module):
 
         self.ASPP_24 = _DenseAsppBlock(input_num=num_features + d_feature1 * 4, num1=d_feature0, num2=d_feature1,
                                        dilation_rate=24, drop_out=dropout0, bn_start=True)
-        num_features = num_features + 5 * d_feature1
+        num_features = num_features + 2 * d_feature1
 
         self.classification = nn.Sequential(
             nn.Dropout2d(p=dropout1),
@@ -104,7 +104,7 @@ class DenseASPP(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_uniform(m.weight.data)
+                nn.init.kaiming_uniform_(m.weight.data)
 
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
@@ -119,14 +119,14 @@ class DenseASPP(nn.Module):
         aspp6 = self.ASPP_6(feature)
         feature = torch.cat((aspp6, feature), dim=1)
 
-        aspp12 = self.ASPP_12(feature)
-        feature = torch.cat((aspp12, feature), dim=1)
+#         aspp12 = self.ASPP_12(feature)
+#         feature = torch.cat((aspp12, feature), dim=1)
 
-        aspp18 = self.ASPP_18(feature)
-        feature = torch.cat((aspp18, feature), dim=1)
+#         aspp18 = self.ASPP_18(feature)
+#         feature = torch.cat((aspp18, feature), dim=1)
 
-        aspp24 = self.ASPP_24(feature)
-        feature = torch.cat((aspp24, feature), dim=1)
+#         aspp24 = self.ASPP_24(feature)
+#         feature = torch.cat((aspp24, feature), dim=1)
 
         cls = self.classification(feature)
 
@@ -139,14 +139,14 @@ class _DenseAsppBlock(nn.Sequential):
     def __init__(self, input_num, num1, num2, dilation_rate, drop_out, bn_start=True):
         super(_DenseAsppBlock, self).__init__()
         if bn_start:
-            self.add_module('norm.1', bn(input_num, momentum=0.0003)),
+            self.add_module('norm1', bn(input_num, momentum=0.0003)),
 
-        self.add_module('relu.1', nn.ReLU(inplace=True)),
-        self.add_module('conv.1', nn.Conv2d(in_channels=input_num, out_channels=num1, kernel_size=1)),
+        self.add_module('relu1', nn.ReLU(inplace=True)),
+        self.add_module('conv1', nn.Conv2d(in_channels=input_num, out_channels=num1, kernel_size=1)),
 
-        self.add_module('norm.2', bn(num1, momentum=0.0003)),
-        self.add_module('relu.2', nn.ReLU(inplace=True)),
-        self.add_module('conv.2', nn.Conv2d(in_channels=num1, out_channels=num2, kernel_size=3,
+        self.add_module('norm2', bn(num1, momentum=0.0003)),
+        self.add_module('relu2', nn.ReLU(inplace=True)),
+        self.add_module('conv2', nn.Conv2d(in_channels=num1, out_channels=num2, kernel_size=3,
                                             dilation=dilation_rate, padding=dilation_rate)),
 
         self.drop_rate = drop_out
@@ -163,13 +163,13 @@ class _DenseAsppBlock(nn.Sequential):
 class _DenseLayer(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, bn_size, drop_rate, dilation_rate=1):
         super(_DenseLayer, self).__init__()
-        self.add_module('norm.1', bn(num_input_features)),
-        self.add_module('relu.1', nn.ReLU(inplace=True)),
-        self.add_module('conv.1', nn.Conv2d(num_input_features, bn_size *
+        self.add_module('norm1', bn(num_input_features)),
+        self.add_module('relu1', nn.ReLU(inplace=True)),
+        self.add_module('conv1', nn.Conv2d(num_input_features, bn_size *
                         growth_rate, kernel_size=1, stride=1, bias=False)),
-        self.add_module('norm.2', bn(bn_size * growth_rate)),
-        self.add_module('relu.2', nn.ReLU(inplace=True)),
-        self.add_module('conv.2', nn.Conv2d(bn_size * growth_rate, growth_rate,
+        self.add_module('norm2', bn(bn_size * growth_rate)),
+        self.add_module('relu2', nn.ReLU(inplace=True)),
+        self.add_module('conv2', nn.Conv2d(bn_size * growth_rate, growth_rate,
                         kernel_size=3, stride=1, dilation=dilation_rate, padding=dilation_rate, bias=False)),
         self.drop_rate = drop_rate
 
